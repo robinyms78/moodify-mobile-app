@@ -23,8 +23,8 @@ function LoginForm()
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Login Form</Text>
-
+      <Text style={styles.header}>Build New Positive Habits</Text>
+       <Text style={styles.header}>Welcome to our app! Start building positive habits today.</Text>
       {/* Email Input */}
       <View style={styles.inputContainer}>
         <Text>Email:</Text>
@@ -67,7 +67,7 @@ function LoginForm()
       </View>
 
       {/* Submit Button */}
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+      <Button title="Login" onPress={handleSubmit(onSubmit)} />
     </View>
   );
 }
