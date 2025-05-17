@@ -1,8 +1,8 @@
 import { View, TextInput, Text, Button, Alert, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 
-function LoginForm() {
-  const { control, handleSubmit, getValues } = useForm({
+function LoginScreen({ navigation }) {
+  const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       email: '',
       password: '',
@@ -10,17 +10,19 @@ function LoginForm() {
   });
 
   const onLoginPress = () => {
-    const { email, password } = getValues();
+    // const { email, password } = getValues();
 
-    if (!email && !password) {
-      Alert.alert('Missing Information', 'Please enter your email address and password');
-    } else if (!email) {
-      Alert.alert('Missing Information', 'Please enter your email address');
-    } else if (!password) {
-      Alert.alert('Missing Information', 'Please enter your password');
-    } else {
-      Alert.alert('Login Successful', 'You have logged in successfully');
-    }
+    // if (!email && !password) {
+    //   Alert.alert('Missing Information', 'Please enter your email address and password');
+    // } else if (!email) {
+    //   Alert.alert('Missing Information', 'Please enter your email address');
+    // } else if (!password) {
+    //   Alert.alert('Missing Information', 'Please enter your password');
+    // } else {
+    //   Alert.alert('Login Successful', 'You have logged in successfully');
+    // }
+    Alert.alert('Login Successful', 'You have logged in successfully');
+    navigation.navigate("Weather");
   };
 
   return (
@@ -34,6 +36,7 @@ function LoginForm() {
         <Controller
           control={control}
           name="email"
+          rules={{ required: 'Email is required' }}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
@@ -46,6 +49,7 @@ function LoginForm() {
             />
           )}
         />
+        {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
       </View>
 
       {/* Password Input */}
@@ -54,6 +58,7 @@ function LoginForm() {
         <Controller
           control={control}
           name="password"
+          rules={{ required: 'Password is required' }}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
@@ -65,6 +70,7 @@ function LoginForm() {
             />
           )}
         />
+        {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
       </View>
 
       {/* Submit Button */}
@@ -97,4 +103,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginForm;
+export default LoginScreen;
