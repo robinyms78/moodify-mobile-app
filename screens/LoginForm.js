@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, TextInput, Text, Button, Alert, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 
