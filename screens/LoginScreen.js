@@ -10,17 +10,6 @@ function LoginScreen({ navigation }) {
   });
 
   const onLoginPress = () => {
-    // const { email, password } = getValues();
-
-    // if (!email && !password) {
-    //   Alert.alert('Missing Information', 'Please enter your email address and password');
-    // } else if (!email) {
-    //   Alert.alert('Missing Information', 'Please enter your email address');
-    // } else if (!password) {
-    //   Alert.alert('Missing Information', 'Please enter your password');
-    // } else {
-    //   Alert.alert('Login Successful', 'You have logged in successfully');
-    // }
     Alert.alert('Login Successful', 'You have logged in successfully');
     navigation.navigate("Weather");
   };
@@ -28,7 +17,7 @@ function LoginScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Build New Positive Habits</Text>
-      <Text style={styles.header}>Welcome to our app! Start building positive habits today.</Text>
+      <Text style={styles.secondHeader}>Welcome to our app! Start building positive habits today.</Text>
 
       {/* Email Input */}
       <View style={styles.inputContainer}>
@@ -87,6 +76,12 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  secondHeader: {
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
