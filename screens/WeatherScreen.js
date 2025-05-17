@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     StyleSheet,
     Text,
@@ -9,7 +9,7 @@ import {
     SafeAreaView,
     ScrollView,
 } from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
 const WeatherApp = () => {
     const [currentForecastIndex, setCurrentForecastIndex] = useState(0);
@@ -91,7 +91,7 @@ const WeatherApp = () => {
         }
     };
 
-    // Update dusplay with selected forecast day
+    // Update display with selected forecast day
     useEffect(() => {
         if (weatherData && weatherData.allForecasts && weatherData.allForecasts.length > 0) {
             const selectedForecast = weatherData.allForecasts[currentForecastIndex];
@@ -122,45 +122,54 @@ const WeatherApp = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.card}>
-                <View style={styles.header}>
+            <View style={styles.topContainer}>
+                 <View style={styles.header}>
                     <Text style={styles.title}>Weather Information</Text>
                 </View>
-            
+
+                {/* Fixed control panel - always visible */}
+                <View style={styles.controlPanel}>
                 {/* Get weather information */}
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={fetchWeatherData}
-                    >
-                        <Text style={styles.buttonText}>Get Weather</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={fetchWeatherData}
+                        >
+                            <Text style={styles.buttonText}>Get Weather</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={clearWeatherData}
-                    >
-                        <Text style={styles.buttonText}>Clear</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={clearWeatherData}
+                        >
+                            <Text style={styles.buttonText}>Clear</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Update location */}
+                    <View style={styles.locationContainer}>
+                        <TextInput
+                            style={styles.locationInput}
+                            value={location}
+                            onChangeText={setLocation}
+                            placeholder="Enter location"
+                        />
+
+                        <TouchableOpacity
+                            style={styles.updateButton}
+                            onPress={updateLocation}
+                        >
+                            <Text style={styles.updateButtonText}>Update Location</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-
-                {/* Update location */}
-                <View style={styles.locationContainer}>
-                    <TextInput
-                        style={styles.locationInput}
-                        value={location}
-                        onChangeText={setLocation}
-                        placeholder="Enter location"
-                    />
-
-                    <TouchableOpacity
-                        style={styles.updateButton}
-                        onPress={updateLocation}
-                    >
-                        <Text style={styles.updateButtonText}>Update Location</Text>
-                    </TouchableOpacity>
-                </View>
-
+            </View>
+               
+            {/* Scrollable content area */}
+            <ScrollView
+                style={styles.ScrollView}
+                contentContainerStyle={styles.ScrollViewContent}    
+            >
                 {loading && (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#3498db" />
@@ -242,26 +251,28 @@ const WeatherApp = () => {
                         )}
                     </View>
                 )}
+                <View style={styles.spacer}></View>
+            </ScrollView>            
+    
+            {/* Fixed footer - always at bottom */}
+            <View style={styles.footer}>
+                {/* Get next weather forecast */}
+                <TouchableOpacity
+                    style={styles.footerButton}
+                    onPress={showNextForecast}
+                    disabled={!weatherData || !weatherData.allForecasts || weatherData.allForecasts.length <= 1}
+                >
+                    <Text style={[
+                        styles.footerButtonText,
+                        (!weatherData || !weatherData.allForecasts || weatherData.allForecasts.length <= 1) && styles.disabledText
+                    ]}>Next</Text>
+                </TouchableOpacity>
 
-                <View style={styles.footer}>
-                    {/* Get next weather forecast */}
-                    <TouchableOpacity
-                        style={styles.footerButton}
-                        onPress={showNextForecast}
-                        disabled={!weatherData || !weatherData.allForecasts || weatherData.allForecasts.length <= 1}
-                    >
-                        <Text style={[
-                            styles.footerButtonText,
-                            (!weatherData || !weatherData.allForecasts || weatherData.allForecasts.length <= 1) && styles.disabledText
-                        ]}>Next</Text>
-                    </TouchableOpacity>
-
-                    {/* Log out */}
-                    <TouchableOpacity style={styles.logoutButton}>
-                        <Feather name="log-out" size={16} color="#666" />
-                        <Text style={styles.logoutText}>logout</Text>
-                    </TouchableOpacity>
-                </View>
+                {/* Log out */}
+                <TouchableOpacity style={styles.logoutButton}>
+                    <Feather name="log-out" size={16} color="#666" />
+                    <Text style={styles.logoutText}>logout</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
@@ -271,24 +282,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
     },
-    card: {
-        backgroundColor: 'white',
-        borderRadius: 20,
+    topContainer: {
         width: '100%',
-        maxWidth: 350,
-        padding: 15,
+        backgroundColor: '#fff',
+        paddingHorizontal: 15,
+        paddingTop: 10,
+        paddingBottom: 10,
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 1,
+        zIndex: 10,
     },
     header: {
         backgroundColor: '#f8f9fa',
@@ -301,10 +307,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    controlPanel: {
+        width: '100%',
+    },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 15,
+        marginBottom: 10,
     },
     button: {
         backgroundColor: '#3498db',
@@ -320,7 +329,7 @@ const styles = StyleSheet.create({
     },
     locationContainer: {
         flexDirection: 'row',
-        marginBottom: 15,
+        marginBottom: 5,
     },
     locationInput: {
         flex: 1,
@@ -344,6 +353,14 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         textAlign: 'center',
     },
+    scrollView: {
+        flex: 1,
+        width: '100%',
+    },
+    ScrollViewContent: {
+        paddingHorizontal: 15,
+        paddingVertical: 15,
+    },
     loadingContainer: {
         padding: 20,
         alignItems: 'center',
@@ -358,10 +375,15 @@ const styles = StyleSheet.create({
         color: '#d32f2f',
     },
     weatherContainer: {
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#ffffff',
         padding: 15,
         borderRadius: 8,
         marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 1,
     },
     weatherTitle: {
         fontSize: 16,
@@ -402,27 +424,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 5,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+        backgroundColor: '#fff',
     },
     footerButton: {
         paddingVertical: 5,
+        marginLeft: 40,
     },
     footerButtonText: {
-        color: '#666',
+        color: '#3498db',
+        fontWeight: '500',
     },
     disabled: {
-        color: '#666',
-    },
-    disabledText: {
         color: '#ccc',
+    },
+    forecastSummary: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 15,
+        fontStyle: 'italic',
+        color: '#555',
     },
     logoutButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginRight: 40,
     },
     logoutText: {
         marginLeft: 5,
         color: '#666',
+    },
+    spacer: {
+        height: 20,
     },
 });
 
