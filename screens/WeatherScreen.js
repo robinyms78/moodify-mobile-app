@@ -190,7 +190,7 @@ const WeatherApp = () => {
                
             {/* Scrollable content area */}
             <ScrollView
-                style={styles.ScrollView}
+                style={styles.scrollView}
                 contentContainerStyle={styles.ScrollViewContent}    
             >
                 {loading && (

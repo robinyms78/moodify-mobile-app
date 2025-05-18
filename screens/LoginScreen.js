@@ -1,4 +1,4 @@
-import { View, TextInput, Text, Button, Alert, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, Alert, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { navigateNested } from '../navigator/RootNavigator';
 import { Feather } from '@expo/vector-icons';
