@@ -1,7 +1,8 @@
 import { View, TextInput, Text, Button, Alert, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
+import { navigateNested } from '../navigator/RootNavigator';
 
-function LoginScreen({ navigation }) {
+function LoginScreen() {
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       email: '',
@@ -11,7 +12,7 @@ function LoginScreen({ navigation }) {
 
   const onLoginPress = () => {
     Alert.alert('Login Successful', 'You have logged in successfully');
-    navigation.navigate("Weather");
+    navigateNested("Main", "Weather");
   };
 
   return (

@@ -9,7 +9,7 @@ const Drawer = createDrawerNavigator();
 export default function DrawerNavigator() {
 
     return (
-        <DrawerNavigator>
+        <Drawer.Navigator>
             <Drawer.Screen
                 name="Weather"
                 component={WeatherScreen}
@@ -28,6 +28,6 @@ export default function DrawerNavigator() {
                     ),
                 }}
             />
-        </DrawerNavigator>
+        </Drawer.Navigator>
     );
 };
