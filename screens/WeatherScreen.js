@@ -8,10 +8,13 @@ import {
     ActivityIndicator,
     SafeAreaView,
     ScrollView,
+    Alert
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const WeatherApp = () => {
+    const navigation = useNavigation();
     const [currentForecastIndex, setCurrentForecastIndex] = useState(0);
     const [location, setLocation] = useState('Singapore');
     const [weatherData, setWeatherData] = useState(null);
@@ -89,6 +92,26 @@ const WeatherApp = () => {
                 (prevIndex + 1) % weatherData.allForecasts.length
             );
         }
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            "Logout",
+            "Are you sure you want to logout?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Logout",
+                    onPress: () => {
+                        // Navigate to the login screen
+                        navigation.navigate('Login');
+                    }
+                }
+            ]
+        );
     };
 
     // Update display with selected forecast day
@@ -269,7 +292,10 @@ const WeatherApp = () => {
                 </TouchableOpacity>
 
                 {/* Log out */}
-                <TouchableOpacity style={styles.logoutButton}>
+                <TouchableOpacity 
+                    style={styles.logoutButton}
+                    onPress={handleLogout}    
+                >
                     <Feather name="log-out" size={16} color="#666" />
                     <Text style={styles.logoutText}>logout</Text>
                 </TouchableOpacity>
@@ -438,7 +464,7 @@ const styles = StyleSheet.create({
         color: '#3498db',
         fontWeight: '500',
     },
-    disabled: {
+    disabledText: {
         color: '#ccc',
     },
     forecastSummary: {
