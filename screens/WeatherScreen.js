@@ -8,10 +8,13 @@ import {
     ActivityIndicator,
     SafeAreaView,
     ScrollView,
-    Alert
+    Alert,
+    Modal,
+    FlatList
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import styles from '../styles/WeatherAppStyles';
 
 const WeatherApp = () => {
     const navigation = useNavigation();
@@ -20,7 +23,99 @@ const WeatherApp = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [areaData, setAreaData] = useState(null);
+    const [showAreaModal, setShowAreaModal] = useState(null);
+    const [selectedArea, setSelectedArea] = useState(null);
+    const [areas, setAreas] = useState([]);
 
+    // Function to fetch area-specific forecasts from data.gov.sg API
+    const fetchAreaData = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            // Fetch 2-hour weather forecase for specific areas
+            const response = await fetch('https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast');
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch area weather data: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("data:", JSON.stringify(data, null, 2));
+
+            // Check if the expected data structure exists based on the actual response format
+            if (!data.data || !data.data.area_metadata || !data.data.items || !data.data.items[0]) {
+                throw new Error('Invalid area weather data format');
+            }
+
+            // Extract area metadata and forecasts
+            const areaMetadata = data.data.area_metadata || [];
+            const forecasts = data.data.items[0]?.forecasts || [];
+            const timestamp = data.data.items[0]?.update_timestamp || '';
+            const validPeriod = data.data.items[0]?.valid_period || {};
+
+            // Prepare area data with both metadata and forecasts
+            const areas = areaMetadata.map(area => {
+                const areaForecast = forecasts.find(f => f.area === area.name);
+                return {
+                    name: area.name,
+                    location: area.label_location,
+                    forecast: areaForecast?.forecast || 'Unknown',
+                };
+            });
+
+            // Sort areas alphabetically for easier selection
+            const sortedAreas = areas.sort((a, b) => a.name.localeCompare(b.name));
+            
+            setAreas(sortedAreas);
+            setAreaData({
+                areas: sortedAreas,
+                validPeriod,
+                timestamp
+            });
+
+            // If we have a selected area, update the weather display
+            if (selectedArea) {
+                updateSelectedAreaWeather(selectedArea, areas);
+            }
+        } catch (err) {
+            console.error('Area data fetch error:', err);
+            setError('Failed to fetch area weather data. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    }; 
+
+    // Update weather display based on selected area
+    const updateSelectedAreaWeather = (area, areasList = areas) => {
+        const areaInfo = areasList.find(a => a.name === area);
+
+        if (areaInfo) {
+            setWeatherData(prev => {
+                if (!prev) return prev; // Don't update if no weather data exists
+
+                return {
+                    ...prev,
+                    location: areaInfo.name,
+                    areaForecast: areaInfo.forecast,
+                    lastUpdated: areaData?.timestamp ? new Date(areaData.timestamp).toLocaleDateString() : 'Today',
+                    validTimeStart: areaData?.validPeriod?.start ? new Date(areaData.validPeriod.start).toLocaleTimeString() : '',
+                    validTimeEnd: areaData?.validPeriod?.end ? new Date(areaData.validPeriod.end).toLocaleDateString() : '',
+                };
+            });
+        }
+    };
+
+    // Function to handle selecting an area from the modal
+    const handleAreaSelect = (area) => {
+        setSelectedArea(area.name);
+        setLocation(area.name);
+        updateSelectedAreaWeather(area.name);
+        setShowAreaModal(false);
+    };
+
+    // Function to fetch general forecasts from data.gov.sg API
     const fetchWeatherData = async() => {
         setLoading(true);
         setError(null);
@@ -28,11 +123,17 @@ const WeatherApp = () => {
         try {
             // Fetch weather data from Singapore API using four-day-outlook endpoint
             const response = await fetch('https://api-open.data.gov.sg/v2/real-time/api/four-day-outlook');
-            const responseData = await response.json();
-            console.log("data:", JSON.stringify(responseData, null, 2));
 
             if (!response.ok) {
-                throw new Error('Failed to fetch weather data');
+                throw new Error(`Failed to fetch weather data: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            console.log("Four-day data:", JSON.stringify(responseData, null, 2));
+
+            // Validate the data structure
+            if (!responseData.data || !responseData.data.records || !responseData.data.records[0] || !responseData.data.records[0].forecasts) {
+                throw new Error('Invalid weather data format');
             }
 
             // Getting today's forecast (first day in the outlook)
@@ -41,6 +142,7 @@ const WeatherApp = () => {
             const todayForecast = forecasts && forecasts[0];
             console.log("Today's forecast: ", JSON.stringify(todayForecast, null, 2));
 
+            // Process and format the weather data for display
             const processedData = {
                 location: location,
                 temperature: {
@@ -66,6 +168,10 @@ const WeatherApp = () => {
             };
 
             setWeatherData(processedData);
+
+            // Then fetch area-specific data
+            await fetchAreaData();
+
         } catch (err) {
             setError ('Failed to fetch weather data. Please try again.');
             console.error(err); 
@@ -74,17 +180,43 @@ const WeatherApp = () => {
         }
     };
 
+    // Function to clear all weather data
     const clearWeatherData = () => {
         setWeatherData(null);
         setCurrentForecastIndex(0);
+        setSelectedArea(null);
+        setAreaData(null);
     };
 
+    // Function to update general location
     const updateLocation = () => {
-        if (weatherData) {
-            fetchWeatherData();
+        if (location.trim() === '') {
+            Alert.alert('Error', 'Please enter a location');
+            return;
+        }
+
+        // Check if location exists in our areas list
+        const matchedArea = areas.find(area => 
+            area.name.toLowerCase() === location.toLowerCase()
+        );
+
+        if (matchedArea) {
+            setSelectedArea(matchedArea.name);
+            updateSelectedAreaWeather(matchedArea.name);
+        } else {
+            // If location not found, show alert with suggestion to open area list
+            Alert.alert(
+                'Location Not Found',
+                'Would you like to select from available areas in Singapore?',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Show Areas', onPress: () => setShowAreaModal(true) }
+                ]
+            );
         }
     };
 
+    // Function to show next day weather forecast
     const showNextForecast = () => {
         if (weatherData && weatherData.allForecasts && weatherData.allForecasts.length > 0) {
             // Move to next forecast day, wrap around to first day if at the end
@@ -94,6 +226,7 @@ const WeatherApp = () => {
         }
     };
 
+    // Function to log out of application
     const handleLogout = () => {
         Alert.alert(
             "Logout",
@@ -140,8 +273,13 @@ const WeatherApp = () => {
                 date: selectedForecast?.timestamp ? new Date(selectedForecast.timestamp).toLocaleDateString() : 'Today',
                 day: selectedForecast?.day || '',
             }));
+
+            // If there's a selected area, we update area forecase as well
+            if (selectedArea) {
+                updateSelectedAreaWeather(selectedArea);
+            }
         }
-    }, [currentForecastIndex, weatherData?.allForecasts, location]);
+    }, [currentForecastIndex, weatherData?.allForecasts]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -179,10 +317,18 @@ const WeatherApp = () => {
                         />
 
                         <TouchableOpacity
-                            style={styles.updateButton}
+                            style={[styles.updateButton, { marginRight: 5}]}
                             onPress={updateLocation}
                         >
-                            <Text style={styles.updateButtonText}>Update Location</Text>
+                            <Text style={styles.updateButtonText}>Update</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.updateButton}
+                            onPress={() => setShowAreaModal(true)}
+                            disabled={!areaData}
+                        >
+                            <Feather name="map-pin" size={14} color="white" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -216,6 +362,21 @@ const WeatherApp = () => {
                         <Text style={styles.dateText}>
                             {weatherData.day} - {weatherData.date}
                         </Text>
+
+                        {/* Display area-specific forecast if available */}
+                        {selectedArea && weatherData.areaForecast && (
+                            <View style={styles.areaForecastContainer}>
+                                <Text style={styles.areaForecastTitle}>Local Forecast</Text>
+                                <Text style={styles.areaForecastText}>
+                                    {weatherData.areaForecast}
+                                </Text>
+                                {weatherData.validTimeStart && weatherData.validTimeEnd && (
+                                    <Text style={styles.validPeriodText}>
+                                        Valid from {weatherData.validTimeStart} to {weatherData.validTimeEnd}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
 
                         {/* Display forecast summary if available */}
                         {weatherData.forecastSummary && (
@@ -300,192 +461,46 @@ const WeatherApp = () => {
                     <Text style={styles.logoutText}>logout</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Area Selection Modal */}
+            <Modal
+                visible={showAreaModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowAreaModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Select Area</Text>
+                            <TouchableOpacity onPress={() => setShowAreaModal(false)}>
+                                <Feather name="x" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={areas}
+                            keyExtractor={(item) => item.name}
+                            renderItem={( { item }) => (
+                                <TouchableOpacity
+                                    style={styles.areaItem}
+                                    onPress={() => handleAreaSelect(item)}
+                                >
+                                    <Text style={styles.areaName}>{item.name}</Text>
+                                    <View style={styles.areaForecastBadge}>
+                                        <Text style={styles.areaForecastText}>
+                                            {item.forecast}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            style={styles.areaList}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    topContainer: {
-        width: '100%',
-        backgroundColor: '#fff',
-        paddingHorizontal: 15,
-        paddingTop: 10,
-        paddingBottom: 10,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-        zIndex: 10,
-    },
-    header: {
-        backgroundColor: '#f8f9fa',
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginBottom: 15,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    controlPanel: {
-        width: '100%',
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-    },
-    button: {
-        backgroundColor: '#3498db',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-        flex: 0.48,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: '500',
-    },
-    locationContainer: {
-        flexDirection: 'row',
-        marginBottom: 5,
-    },
-    locationInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        marginRight: 8,
-    },
-    updateButton: {
-        backgroundColor: '#3498db',
-        paddingVertical: 10,
-        paddingHorizontal: 10,
-        borderRadius: 5,
-        justifyContent: 'center',
-    },
-    updateButtonText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: '500',
-        textAlign: 'center',
-    },
-    scrollView: {
-        flex: 1,
-        width: '100%',
-    },
-    ScrollViewContent: {
-        paddingHorizontal: 15,
-        paddingVertical: 15,
-    },
-    loadingContainer: {
-        padding: 20,
-        alignItems: 'center',
-    },
-    errorContainer: {
-        backgroundColor: '#ffebee',
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 15,
-    },
-    errorText: {
-        color: '#d32f2f',
-    },
-    weatherContainer: {
-        backgroundColor: '#ffffff',
-        padding: 15,
-        borderRadius: 8,
-        marginBottom: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    weatherTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 5,
-    },
-    dateText: {
-        fontSize: 14,
-        textAlign: 'center',
-        marginBottom: 15,
-        color: '#666',
-    },
-    weatherDetail: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    weatherText: {
-        marginLeft: 10,
-        fontSize: 14,
-        color: '#333',
-    },
-    forecastNavigation: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-    },
-    navigationText: {
-        color: '#666',
-        fontSize: 12,
-    },
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        backgroundColor: '#fff',
-    },
-    footerButton: {
-        paddingVertical: 5,
-        marginLeft: 40,
-    },
-    footerButtonText: {
-        color: '#3498db',
-        fontWeight: '500',
-    },
-    disabledText: {
-        color: '#ccc',
-    },
-    forecastSummary: {
-        fontSize: 14,
-        textAlign: 'center',
-        marginBottom: 15,
-        fontStyle: 'italic',
-        color: '#555',
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: 40,
-    },
-    logoutText: {
-        marginLeft: 5,
-        color: '#666',
-    },
-    spacer: {
-        height: 20,
-    },
-});
 
 export default WeatherApp;
