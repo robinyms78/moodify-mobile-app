@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
+        alignSelf: 'left',
     },
     weatherText: {
         marginLeft: 10,
@@ -245,11 +246,26 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         alignItems: 'center',
     },
+    areaForecastSubContainer: {
+        flex: 1,
+        backgroundColor: '#FDFD96',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 15,
+        alignItems: 'center',
+    },
     areaForecastTitle: {
         fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 5,
         color: '#1976d2',
+    },
+    areaForecastSubTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        color: '#1976d2',
+        alignItems: 'center'
     },
     validPeriodText: {
         fontSize: 11,

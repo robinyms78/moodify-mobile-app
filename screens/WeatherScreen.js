@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-    StyleSheet,
     Text,
     View,
     TouchableOpacity,
@@ -15,6 +14,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/WeatherAppStyles';
+import { format } from 'date-fns';
 
 const WeatherApp = () => {
     const navigation = useNavigation();
@@ -43,7 +43,7 @@ const WeatherApp = () => {
 
             const data = await response.json();
             console.log("data:", JSON.stringify(data, null, 2));
-
+            
             // Check if the expected data structure exists based on the actual response format
             if (!data.data || !data.data.area_metadata || !data.data.items || !data.data.items[0]) {
                 throw new Error('Invalid area weather data format');
@@ -358,15 +358,10 @@ const WeatherApp = () => {
                             <Feather name="cloud" size={20} /> Weather in {weatherData.location}
                         </Text>
 
-                        {/* Display weather date */}
-                        <Text style={styles.dateText}>
-                            {weatherData.day} - {weatherData.date}
-                        </Text>
-
                         {/* Display area-specific forecast if available */}
                         {selectedArea && weatherData.areaForecast && (
                             <View style={styles.areaForecastContainer}>
-                                <Text style={styles.areaForecastTitle}>Local Forecast</Text>
+                                <Text style={styles.areaForecastTitle}>Today's Forecast</Text>
                                 <Text style={styles.areaForecastText}>
                                     {weatherData.areaForecast}
                                 </Text>
@@ -378,52 +373,60 @@ const WeatherApp = () => {
                             </View>
                         )}
 
-                        {/* Display forecast summary if available */}
-                        {weatherData.forecastSummary && (
-                            <Text style={styles.forecastSummary}>
-                                {weatherData.forecastSummary}
+                        <View style={styles.areaForecastSubContainer}>
+                            <Text style={styles.areaForecastSubTitle}>{weatherData.day} Forecast</Text>
+                            {/* Display weather date */}
+                            <Text style={styles.dateText}>
+                                {weatherData.date}
                             </Text>
-                        )}
 
-                        {/* Display temperature */}
-                        <View style={styles.weatherDetail}>
-                            <Feather name="thermometer" size={18} color="#3498db" />
-                            <Text style={styles.weatherText}>
-                                Temperature: {weatherData.temperature.min} - {weatherData.temperature.max}
-                            </Text>
-                        </View>
+                            {/* Display forecast summary if available */}
+                            {weatherData.forecastSummary && (
+                                <Text style={styles.forecastSummary}>
+                                    {weatherData.forecastSummary}
+                                </Text>
+                            )}
 
-                        {/* Display humidity */}
-                        <View style={styles.weatherDetail}>
-                            <Feather name="droplet" size={18} color="#3498db" />
-                            <Text style={styles.weatherText}>
-                                Humidity: {weatherData.humidity.min} - {weatherData.humidity.max}
-                            </Text>
-                        </View>
+                            {/* Display temperature */}
+                            <View style={styles.weatherDetail}>
+                                <Feather name="thermometer" size={18} color="#3498db" />
+                                <Text style={styles.weatherText}>
+                                    Temperature: {weatherData.temperature.min} - {weatherData.temperature.max}
+                                </Text>
+                            </View>
 
-                        {/* Display rain information */}
-                        <View style={styles.weatherDetail}>
-                            <Feather name="cloud-rain" size={18} color="#3498db" />
-                            <Text style={styles.weatherText}>
-                                Forecast: {weatherData.forecast}
-                            </Text>
-                        </View>
+                            {/* Display humidity */}
+                            <View style={styles.weatherDetail}>
+                                <Feather name="droplet" size={18} color="#3498db" />
+                                <Text style={styles.weatherText}>
+                                    Humidity: {weatherData.humidity.min} - {weatherData.humidity.max}
+                                </Text>
+                            </View>
 
-                        {/* Display wind information */}
-                        <View style={styles.weatherDetail}>
-                            <Feather name="wind" size={18} color="#3498db" />
-                            <Text style={styles.weatherText}>
-                                Wind Speed: {weatherData.windSpeed.min} - {weatherData.windSpeed.max}
-                                {weatherData.windDirection ? ` (${weatherData.windDirection})` : ''}
-                            </Text>
-                        </View>
+                            {/* Display rain information */}
+                            <View style={styles.weatherDetail}>
+                                <Feather name="cloud-rain" size={18} color="#3498db" />
+                                <Text style={styles.weatherText}>
+                                    Forecast: {weatherData.forecast}
+                                </Text>
+                            </View>
 
-                        {/* Display time */}
-                        <View style={styles.weatherDetail}>
-                            <Feather name="clock" size={18} color="#3498db" />
-                            <Text style={styles.weatherText}>
-                                Last Updated: {weatherData.lastUpdated}
-                            </Text>
+                            {/* Display wind information */}
+                            <View style={styles.weatherDetail}>
+                                <Feather name="wind" size={18} color="#3498db" />
+                                <Text style={styles.weatherText}>
+                                    Wind Speed: {weatherData.windSpeed.min} - {weatherData.windSpeed.max}
+                                    {weatherData.windDirection ? ` (${weatherData.windDirection})` : ''}
+                                </Text>
+                            </View>
+
+                            {/* Display time */}
+                            <View style={styles.weatherDetail}>
+                                <Feather name="clock" size={18} color="#3498db" />
+                                <Text style={styles.weatherText}>
+                                    Last Updated: {weatherData.lastUpdated}
+                                </Text>
+                            </View>
                         </View>
 
                         {weatherData.allForecasts && weatherData.allForecasts.length > 1 && (
