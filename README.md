@@ -14,15 +14,13 @@ Moodify mobile app helps users build and maintain positive habits by recommendin
 - **Android Studio** (latest version recommended)
 
 ### Steps
-1. **Clone the Repository:**
-   ...bash
+1. **Clone the Repository:**<br>
    git clone https://github.com/yourusername/moodify-app.git
-   ...
 
-2. **Navigate to the Project Directory:**
+2. **Navigate to the Project Directory:**<br>
    cd moodify-app
 
-3. **Install Dependencies:**
+3. **Install Dependencies:**<br>
    npm install<br>
    npm install react-hook-form<br>
    npm install @expo/vector-icons<br>
@@ -30,12 +28,11 @@ Moodify mobile app helps users build and maintain positive habits by recommendin
    npm install @react-navigation/drawer<br>
    npm install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view<br>
    npm install @react-navigation/stack<br>
-   ...
 
-4. **Run the Application:**
+4. **Run the Application:**<br>
    npm expo start
 
-5. **Start Android Emulator:**
+5. **Start Android Emulator:**<br>
    Select "a" to launch the app from Andriod Emulator  
 
 ## License
