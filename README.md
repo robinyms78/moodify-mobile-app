@@ -20,30 +20,23 @@ Moodify mobile app helps users build and maintain positive habits by recommendin
    ...
 
 2. **Navigate to the Project Directory:**
-   ...bash
    cd moodify-app
-   ...
 
 3. **Install Dependencies:**
-   ...bash
-   npm install
-   npm install react-hook-form
-   npm install @expo/vector-icons
-   npm install @react-navigation/native
-   npm install @react-navigation/drawer
-   npm install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
-   npm install @react-navigation/stack
+   npm install<br>
+   npm install react-hook-form<br>
+   npm install @expo/vector-icons<br>
+   npm install @react-navigation/native<br>
+   npm install @react-navigation/drawer<br>
+   npm install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view<br>
+   npm install @react-navigation/stack<br>
    ...
 
 4. **Run the Application:**
-   ...bash
    npm expo start
-   ...
 
 5. **Start Android Emulator:**
-   ...
    Select "a" to launch the app from Andriod Emulator  
-   ...
 
 ## License
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
