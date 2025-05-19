@@ -4,7 +4,7 @@
 Moodify mobile app helps users build and maintain positive habits by recommending activities based on weather conditions.
 
 ## Features
-- **Weather Integration:** Displays current weather with insights.
+- **Weather Integration:** Displays current weather based on geographical position.
 - **Activities Recommendations:** Recommend activities based on current weather condition.
 
 ## Installation
