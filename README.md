@@ -33,7 +33,7 @@ Moodify mobile app helps users build and maintain positive habits by recommendin
    npm expo start
 
 5. **Start Android Emulator:**<br>
-   Select "a" to launch the app from Andriod Emulator  
+   Select "a" to launch the app from Android Emulator  
 
 ## License
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
