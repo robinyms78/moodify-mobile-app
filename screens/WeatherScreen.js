@@ -13,8 +13,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import styles from '../styles/WeatherAppStyles';
-import { format } from 'date-fns';
+import styles from '../styles/WeatherScreenStyles';
 
 const WeatherApp = () => {
     const navigation = useNavigation();
