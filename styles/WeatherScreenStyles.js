@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     disabledButton: {
-        backgroundColor: '#bdc3c7',
+        backgroundColor: 'white',
     },
     updateButtonText: {
         color: 'white',

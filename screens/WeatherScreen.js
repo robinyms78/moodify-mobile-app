@@ -49,20 +49,21 @@ const WeatherApp = () => {
             const data = await response.json();
             console.log("Full API Response:", JSON.stringify(data, null, 2));
             
-            // Validate amd extract data more carefully
+            // Validate and extract data more carefully
             const validPeriod = data?.data?.items?.[0]?.valid_period || {};
             console.log("Raw Valid Period:", validPeriod);
 
             // Process the timestamps
-            const processTimestamp = (ts) => {
-                if (!ts) return null;
+            const processTimestamp = (timeStamp) => {
+                if (!timeStamp) return null;
                 // Try to detect if it's a Unix timestamp (in seconds)
-                if (/^\d+$/.test(ts)) {
-                    return new Date(parseInt(ts) * 1000).toISOString();
+                if (/^\d+$/.test(timeStamp)) {
+                    return new Date(parseInt(timeStamp) * 1000).toISOString();
                 }
-                return ts;
+                return timeStamp;
             } ;
 
+            // Process start and end time
             const processedStart = processTimestamp(validPeriod.start);
             const processedEnd = processTimestamp(validPeriod.end);
 
@@ -176,6 +177,7 @@ const WeatherApp = () => {
             // Store all forecasts for potential future use
             allForecasts: forecasts,
 
+            // Today's timestamp
             isToday: isToday(todayForecast?.timestamp)
         };
     };
@@ -230,7 +232,7 @@ const WeatherApp = () => {
         setError(null);
     };
 
-    // Function to update general location
+    // Function to update specific location
     const updateLocation = () => {
         const trimmedLocation = location.trim();
 
@@ -423,7 +425,7 @@ const WeatherApp = () => {
                             {selectedArea && weatherData.areaForecast && (
                                 <View style={styles.areaForecastContainer}>
                                     <Text style={styles.areaForecastTitle}>
-                                        Today's 2-Hour Forecast
+                                        Today's 2-Hourly Forecast
                                     </Text>
                                     <Text style={styles.areaForecastText}>
                                         {weatherData.areaForecast}
@@ -505,6 +507,8 @@ const WeatherApp = () => {
                             )}
                         </View>
                     )}
+
+                    {/* Activity screen button */}
                     <View style={styles.spacer}></View>
                         <TouchableOpacity
                             style={styles.button}
