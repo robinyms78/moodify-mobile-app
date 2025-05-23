@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     disabledText: {
-        color: '#ccc',
+        color: 'white',
     },
     forecastSummary: {
         fontSize: 14,
