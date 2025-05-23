@@ -96,7 +96,7 @@ const WeatherApp = () => {
         }
     };
 
-    // Helper function to determine if forecase is for today
+    // Helper function to determine if forecast is for today
     const isToday =(timestamp) => {
         if (!timestamp) return true;
         const forecastDate = new Date(timestamp);
