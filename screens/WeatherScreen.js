@@ -73,13 +73,26 @@ const WeatherApp = () => {
     // Helper function to format time
     const formatTime = (timestamp) => {
         if (!timestamp) return '';
+
         try {
-            return new Date(timestamp).toLocaleDateString('en-SG', {
+            // Handle both ISO strings and Unix timestamps
+            const date = timestamp.length > 13 ? new Date(timestamp) : new Date(parseInt(timestamp));
+
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid timestamp: ' , timestamp);
+                return '';
+            }
+
+            // Format for Singapore timezone (GMT+8)
+            return date.toLocaleTimeString('en-SG', {
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                timeZone: 'Asia/Singapore',
+                hour12: false
             });
         } catch (error) {
-            console.warn('Time formatting error:', error);
+            console.warn('Time formatting error:', error, 'Timestamp:', timestamp);
+            return '';
         }
     };
 
@@ -102,22 +115,36 @@ const WeatherApp = () => {
             }
 
             const data = await response.json();
-            console.log("data:", JSON.stringify(data, null, 2));
+            console.log("Full API Response:", JSON.stringify(data, null, 2));
             
-            // Validate data structure
-            if (!data.data.area_metadata || !data.data.items[0]) {
-                throw new Error('Invalid area weather data format');
-            }
+            // Validate amd extract data more carefully
+            const validPeriod = data?.data?.items?.[0]?.valid_period || {};
+            console.log("Raw Valid Period:", validPeriod);
 
-            // Extract area metadata and forecasts
-            const areaMetadata = data.data.area_metadata || [];
-            const forecasts = data.data.items[0]?.forecasts || [];
-            const timestamp = data.data.items[0]?.update_timestamp;
-            const validPeriod = data.data.items[0]?.valid_period || {};
+            // Process the timestamps
+            const processTimestamp = (ts) => {
+                if (!ts) return null;
+                // Try to detect if it's a Unix timestamp (in seconds)
+                if (/^\d+$/.test(ts)) {
+                    return new Date(parseInt(ts) * 1000).toISOString();
+                }
+                return ts;
+            } ;
+
+            const processedStart = processTimestamp(validPeriod.start);
+            const processedEnd = processTimestamp(validPeriod.end);
+
+            console.log("Processed Start:", processedStart, "->", formatTime(processedStart));
+            console.log("Processed End:", processedEnd, "->", formatTime(processedEnd));
+
+            // Extract area metadata
+            const areaMetadata = data?.data?.area_metadata || [];
+            const forecasts = data?.data?.items[0]?.forecasts || [];
 
             // Map area metadata with forecasts
             const processedAreas = areaMetadata.map(area => {
                 const areaForecast = forecasts.find(f => f.area === area.name);
+
                 return {
                     name: area.name,
                     location: area.label_location,
@@ -128,14 +155,12 @@ const WeatherApp = () => {
             setAreas(processedAreas);
             setAreaData({
                 areas: processedAreas,
-                validPeriod,
-                timestamp
+                validPeriod: {
+                    start: validPeriod.start ? formatTime(validPeriod.start) : 'Now',
+                    end: validPeriod.end ? formatTime(validPeriod.end) : '2 hours later'
+                },
+                timestamp: data?.data?.items?.[0]?.update_timestamp || new Date().toISOString()
             });
-
-            // If we have a selected area, update the weather display
-            if (selectedArea) {
-                updateSelectedAreaWeather(selectedArea, processedAreas);
-            }
 
             return processedAreas;
         } catch (err) {
@@ -153,8 +178,8 @@ const WeatherApp = () => {
                 ...prev,
                 location: areaInfo.name,
                 areaForecast: areaInfo.forecast,
-                validTimeStart: areaData?.validPeriod?.start ? formatTime(areaData.validPeriod.start) : '',
-                validTimeEnd: areaData?.validPeriod?.end ? formatTime(areaData.validPeriod.end) : '',
+                validTimeStart: areaData?.validPeriod?.start || '',
+                validTimeEnd: areaData?.validPeriod?.end || '',
             }));
         }
     };
@@ -168,7 +193,7 @@ const WeatherApp = () => {
     };
 
     // Function to process weather forecast data
-    const processWeatherData = (forecasts, timestamp) => {
+    const processWeatherData = (forecasts) => {
         if (!forecasts || forecasts.length === 0) {
             throw new Error('No forecast data available');
         }
@@ -462,26 +487,27 @@ const WeatherApp = () => {
                                 <Feather name="cloud" size={20} /> Weather in {weatherData.location}
                             </Text>
 
-                            {/* Display area-specific forecast if available */}
+                            {/* Display area-specific 2-hourly weather forecast if available */}
                             {selectedArea && weatherData.areaForecast && (
                                 <View style={styles.areaForecastContainer}>
                                     <Text style={styles.areaForecastTitle}>
-                                        {weatherData.isToday ? "Today's 2-Hour Forecast" : "Current Area Forecast"}
+                                        Today's 2-Hour Forecast
                                     </Text>
                                     <Text style={styles.areaForecastText}>
                                         {weatherData.areaForecast}
                                     </Text>
                                     {weatherData.validTimeStart && weatherData.validTimeEnd && (
                                         <Text style={styles.validPeriodText}>
-                                            Valid from {weatherData.validTimeStart} - {weatherData.validTimeEnd}
+                                            Valid from {weatherData.validTimeStart} to {weatherData.validTimeEnd}
                                         </Text>
                                     )}
                                 </View>
                             )}
 
+                            {/* Display daily weather forecast if available */}
                             <View style={styles.areaForecastSubContainer}>
                                 <Text style={styles.areaForecastSubTitle}>
-                                    Forecast
+                                    Daily Forecast
                                 </Text>
 
                                 {/* Display weather date */}
