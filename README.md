@@ -15,10 +15,10 @@ Moodify mobile app helps users build and maintain positive habits by recommendin
 
 ### Steps
 1. **Clone the Repository:**<br>
-   git clone https://github.com/yourusername/moodify-app.git
+   git clone https://github.com/yourusername/moodify-mobile-app.git
 
 2. **Navigate to the Project Directory:**<br>
-   cd moodify-app
+   cd moodify-mobile-app
 
 3. **Install Dependencies:**<br>
    npm install<br>
